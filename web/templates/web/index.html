@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="row">
+    <div class="col">
+        <div class="card2 p-3 mb-5 bg-white rounded" id="sidebar">
+            <div class="row">
+                <div class="col">
+                    <h5>Filter</h5>
+                    <ul>
+                        <li><a href="?filter=unread"><i class="fas fa-angle-right"></i> Unread</a></li>
+                        <li><a href="?filter=read"><i class="fas fa-angle-right"></i> Read</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Save a link!</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" name="add_bookmark_input" class="form-control" placeholder="Enter a URL or some text" aria-label="URL" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            {% csrf_token %}
+                            <button class="btn btn-dark" type="button" id="save_link" onclick="addBookmark()">Save</button>
+                        </div>
+                    </div>
+                    <div id="add_bookmark_result" class="hidden">
+                        <div class="alert alert-success" role="alert">
+                            <p>Bookmark added!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if tags %}
+            <div class="row">
+                <div class="col tags">
+                    <h5>Tags</h5>
+                    {% for tag in tags %}
+                         <span class="badge tag tag-button">{{tag.name}}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-primary btn-sm mt-2" type="button" id="filterOnTag" onclick="filterOnTags()">Filter on tag</button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<div class="bookmarks">
+    {% for bookmark in bookmarks %}
+    <div class="mb-1 pb-2" style="border-bottom: 1px solid rgb(236, 236, 236);" id="{{bookmark.bm_id}}">
+        <div class="row justify-content-between pr-4">
+
+
+                <div class="col-md-9">
+                    {% if bookmark.title %}
+                        <h6 class="card-title"><a href="{{ bookmark.link }}" target="_blank" rel="noopener noreferrer">{{bookmark.title}}</a>
+                        <small style="color: rgb(185, 185, 185)"><p class="card-text">{{bookmark.link}}</p></small></h6>
+                    {% endif %}
+
+
+                    {% for tag in bookmark.tags.all %}
+                        <span class="badge tag">{{tag.name}}</span>
+                    {% endfor %}
+                    <!--<i class="fas fa-plus-circle"></i>-->
+                </div>
+                <div id="col-md-3" class="mx-3">
+
+                    <form>
+                        {% csrf_token %}
+                        <small class="view-bookmark"><a href="{% url 'web:view_bookmark' bookmark.bm_id %}"><i style=" cursor: pointer;" class="fas fa-eye"></i> View</a>
+                        <span class="link-delete-button" title="Delete bookmark" onclick="delete_bookmark('{{bookmark.bm_id}}')"><i class="fas fa-times"></i> Delete</span>
+                        {% if bookmark.read %}
+                            <span class="link-save-button {% if bookmark.read %} bookmark-read {% endif %}"
+                                title="Bookmark read" onclick="save_bookmark('{{bookmark.bm_id}}')"><i class="fas fa-bookmark"></i> Archived</span>
+                        {% else %}
+                            <span class="link-save-button {% if bookmark.read %} bookmark-read {% endif %}"
+                                title=" Mark as read" onclick="save_bookmark('{{bookmark.bm_id}}')"><i class="fas fa-bookmark"></i> Archive</span>
+                        {% endif %}
+                            </small>
+                    </form>
+                </div>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<br />
+
+
+{% if not bookmarks %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+            <center><h3>Hmm, you have no bookmarks saved ☹️</h3></center>
+    </div>
+</div>
+{% else %}
+
+<div class="row">
+    <div class="col">
+        <div class="text-center">
+            <span class="step-links">
+                {% if bookmarks.has_previous %}
+                    <a href="?page=1{% if 'filter' in request.GET %}&filter={{ request.GET.filter }}{% endif %}{% if 'tags' in request.GET %}&tags={{ request.GET.tags }}{% endif %}">&laquo; first</a>
+                    <a href="?page={{ bookmarks.previous_page_number }}{% if 'filter' in request.GET %}&filter={{ request.GET.filter }}{% endif %}
+                    {% if 'tags' in request.GET %}&tags={{ request.GET.tags }}{% endif %}">previous</a>
+                {% endif %}
+        
+                <span class="current">
+                    Page {{ bookmarks.number }} of {{ bookmarks.paginator.num_pages }}.
+                </span>
+        
+                {% if bookmarks.has_next %}
+                    <a class="pagination__next" href="?page={{ bookmarks.next_page_number }}{% if 'filter' in request.GET %}&filter={{ request.GET.filter }}{% endif %}{% if 'tags' in request.GET %}&tags={{ request.GET.tags }}{% endif %}">next</a>
+                    <a href="?page={{ bookmarks.paginator.num_pages }}{% if 'filter' in request.GET %}&filter={{ request.GET.filter }}{% endif %}{% if 'tags' in request.GET %}&tags={{ request.GET.tags }}{% endif %}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>      
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock %}
