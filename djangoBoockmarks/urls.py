@@ -25,8 +25,6 @@ urlpatterns = [
     path('login/', user_login, name="login"),
     path('logout/', user_logout, name="logout"),
     path('register/', register, name="register"),
-    path("api/", include('apps.api.urls')),
-    path('dashboard/', include('apps.web.urls')),
     path('settings/', include('apps.settings.urls')),
     path('admin/', admin.site.urls),
 ]
